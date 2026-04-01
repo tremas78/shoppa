@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🥘 Meal Planner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #FDF6EE;
+    --surface: #FFFFFF;
+    --surface2: #FEF0DC;
+    --border: #F0D9BA;
+    --text: #2D1A0E;
+    --text2: #7A5C40;
+    --accent1: #E8622A;
+    --accent2: #F4A62B;
+    --accent3: #4CAF78;
+    --accent4: #3B8FD4;
+    --accent5: #9B59B6;
+    --red: #E84040;
+    --shadow: 0 4px 20px rgba(45,26,14,0.10);
+    --shadow-sm: 0 2px 8px rgba(45,26,14,0.08);
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: var(--accent1);
+    padding: 18px 20px 14px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(232,98,42,0.30);
+  }
+  .app-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .app-header p { color: rgba(255,255,255,0.8); font-size: 0.78rem; margin-top: 2px; }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 74px;
+    z-index: 99;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 13px 4px;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .tab-btn .tab-icon { font-size: 1.3rem; }
+  .tab-btn.active { color: var(--accent1); }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background: var(--accent1);
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; padding: 16px; }
+  .panel.active { display: block; }
+
+  /* ── SECTION HEADERS ── */
+  .section-label {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── WEEK PLANNER ── */
+  .week-grid { display: flex; flex-direction: column; gap: 10px; }
+
+  .day-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1.5px solid var(--border);
+  }
+  .day-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .day-clear-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: 0.5;
+    padding: 2px 6px;
+  }
+  .day-body { padding: 10px 14px; }
+
+  .meal-slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+  }
+  .meal-slot-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text2);
+    width: 54px;
+    flex-shrink: 0;
+  }
+  .meal-slot select {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    background: var(--bg);
+    color: var(--text);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A5C40' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .meal-slot select:focus { outline: none; border-color: var(--accent1); }
+
+  .add-to-list-btn {
+    background: var(--accent3);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.1s, opacity 0.2s;
+    flex-shrink: 0;
+  }
+  .add-to-list-btn:active { transform: scale(0.94); }
+
+  .day-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* ── MEALS EDITOR ── */
+  .meals-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .meal-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+  }
+  .meal-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .meal-emoji-badge {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .meal-card-title {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .meal-card-count {
+    font-size: 0.72rem;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .meal-card-toggle { font-size: 0.9rem; color: var(--text2); flex-shrink: 0; }
+  .meal-card-body {
+    display: none;
+    padding: 0 14px 14px;
+    border-top: 1.5px solid var(--border);
+    padding-top: 12px;
+  }
+  .meal-card.open .meal-card-body { display: block; }
+  .meal-card.open .meal-card-toggle { transform: rotate(180deg); }
+
+  .meal-name-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .meal-name-row input[type="text"] {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    background: var(--bg);
+  }
+  .emoji-input {
+    width: 56px;
+    text-align: center;
+    font-size: 1.3rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    background: var(--bg);
+  }
+  .meal-name-row input:focus, .emoji-input:focus { outline: none; border-color: var(--accent1); }
+
+  .ingredients-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ingredient-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .ingredient-row input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    background: var(--bg);
+  }
+  .ingredient-row input:focus { outline: none; border-color: var(--accent1); }
+  .qty-input { width: 72px !important; flex: none !important; }
+
+  .del-btn {
+    background: none;
+    border: none;
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--red);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  .del-btn:active { opacity: 1; }
+
+  .add-ingredient-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text2);
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .add-ingredient-btn:hover { border-color: var(--accent1); color: var(--accent1); }
+
+  .meal-action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.95); }
+  .btn-primary { background: var(--accent1); color: #fff; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-accent2 { background: var(--accent2); color: #fff; }
+  .btn-accent4 { background: var(--accent4); color: #fff; }
+  .btn-accent5 { background: var(--accent5); color: #fff; }
+
+  .add-meal-btn-wrap {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── SHOPPING LIST ── */
+  .shopping-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .shop-count-badge {
+    background: var(--accent2);
+    color: #fff;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    align-self: center;
+  }
+
+  .shopping-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .shop-item {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-sm);
+    transition: opacity 0.2s;
+  }
+  .shop-item.checked {
+    opacity: 0.45;
+    text-decoration: line-through;
+  }
+  .shop-item-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .shop-item.checked .shop-item-check {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: #fff;
+  }
+  .shop-item-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .shop-item-text input {
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 0;
+  }
+  .shop-item-text input:focus { outline: none; }
+  .shop-item-source {
+    font-size: 0.65rem;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .adhoc-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .adhoc-row input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    background: var(--surface);
+  }
+  .adhoc-row input:focus { outline: none; border-color: var(--accent1); }
+
+  .keep-copy-box {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-top: 4px;
+  }
+  .keep-copy-box h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .keep-preview {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    font-family: monospace;
+    color: var(--text2);
+    max-height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+    border: 1.5px solid var(--border);
+    line-height: 1.6;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45,26,14,0.5);
+    z-index: 500;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 36px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+  }
+  .modal-ingr-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; margin-bottom: 16px; }
+  .modal-ingr-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    padding: 10px 12px;
+  }
+  .modal-ingr-item label { flex: 1; font-size: 0.9rem; cursor: pointer; }
+  .modal-ingr-item input[type="checkbox"] {
+    width: 20px; height: 20px; accent-color: var(--accent1); flex-shrink: 0; cursor: pointer;
+  }
+  .modal-ingr-qty {
+    font-size: 0.78rem;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+  .modal-actions { display: flex; gap: 8px; }
+
+  /* ── MISC ── */
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text2);
+    font-size: 0.9rem;
+  }
+  .empty-state .empty-emoji { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+  .color-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+
+  .section-divider {
+    border: none;
+    border-top: 2px dashed var(--border);
+    margin: 18px 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>🥘 Weekly Meal Planner</h1>
+  <p>Plan meals · build your shopping list · share with your partner</p>
+</header>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('planner')" id="tab-planner">
+    <span class="tab-icon">🗓️</span>Week
+  </button>
+  <button class="tab-btn" onclick="switchTab('meals')" id="tab-meals">
+    <span class="tab-icon">🍽️</span>Meals
+  </button>
+  <button class="tab-btn" onclick="switchTab('shopping')" id="tab-shopping">
+    <span class="tab-icon">🛒</span>Shopping
+  </button>
+</nav>
+
+<!-- ═══════════════════ WEEK PLANNER ═══════════════════ -->
+<section class="panel active" id="panel-planner">
+  <p class="section-label">🗓️ This Week's Menu</p>
+  <div class="week-grid" id="week-grid"></div>
+</section>
+
+<!-- ═══════════════════ MEALS EDITOR ═══════════════════ -->
+<section class="panel" id="panel-meals">
+  <p class="section-label">🍽️ My Meals</p>
+
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+    <p style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📦 Meals Database</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent4" onclick="exportMeals()">⬇️ Export JSON</button>
+      <label class="btn btn-accent5" style="cursor:pointer;margin:0;">
+        ⬆️ Import JSON
+        <input type="file" accept=".json" style="display:none;" onchange="importMeals(event)">
+      </label>
+    </div>
+    <p style="font-size:0.72rem;color:var(--text2);margin-top:8px;line-height:1.5;">Export saves your meals to a <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;">.json</code> file. Import merges new meals in — existing ones won't be duplicated.</p>
+  </div>
+
+  <div class="meals-list" id="meals-list"></div>
+  <div class="add-meal-btn-wrap">
+    <button class="btn btn-accent2" onclick="addNewMeal()">➕ Add New Meal</button>
+  </div>
+</section>
+
+<!-- ═══════════════════ SHOPPING LIST ═══════════════════ -->
+<section class="panel" id="panel-shopping">
+  <p class="section-label">🛒 Shopping List</p>
+
+  <div class="adhoc-row">
+    <input type="text" id="adhoc-input" placeholder="Add item manually…" onkeydown="if(event.key==='Enter') addAdhocItem()">
+    <button class="btn btn-accent2" onclick="addAdhocItem()">➕</button>
+  </div>
+
+  <div class="shopping-toolbar">
+    <span class="shop-count-badge" id="shop-count">0 items</span>
+    <button class="btn btn-secondary" onclick="clearChecked()" style="font-size:0.78rem;padding:6px 12px;">✅ Clear done</button>
+    <button class="btn btn-danger" onclick="clearAll()" style="font-size:0.78rem;padding:6px 12px;">🗑️ Clear all</button>
+  </div>
+
+  <div class="shopping-items" id="shopping-items"></div>
+
+  <hr class="section-divider">
+
+  <div class="keep-copy-box">
+    <h3>📋 Copy for Google Keep</h3>
+    <div class="keep-preview" id="keep-preview">Your list will appear here…</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent4" onclick="copyForKeep()">📋 Copy to clipboard</button>
+      <button class="btn btn-secondary" style="font-size:0.78rem;" onclick="updateKeepPreview()">🔄 Refresh preview</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ INGREDIENT PICKER MODAL ═══════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h2 id="modal-title">🛒 Add ingredients to list</h2>
+    <div class="modal-ingr-list" id="modal-ingr-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmIngredients()">➕ Add selected</button>
+      <button class="btn btn-secondary" onclick="closeModalDirect()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DAY_EMOJIS = ['☀️','🌤️','⛅','🌥️','🎉','🌟','☕'];
+const MEAL_SLOTS = [
+  { key: 'dinner', label: '🍽️ Dinner' }
+];
+
+let state = {
+  meals: [],
+  week: {},       // { Monday: { lunch: mealId, dinner: mealId }, ... }
+  shopping: []    // [{ id, name, source, checked }]
+};
+
+let modalContext = null; // { mealId, day, slotKey }
+
+function loadState() {
+  const saved = localStorage.getItem('mealplanner_v2');
+  if (saved) {
+    state = JSON.parse(saved);
+  } else {
+    state = getDefaultState();
+  }
+  DAYS.forEach(d => { if (!state.week[d]) state.week[d] = {}; });
+}
+
+function saveState() {
+  localStorage.setItem('mealplanner_v2', JSON.stringify(state));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function getDefaultState() {
+  return {
+    meals: [
+      { id: uid(), emoji: '🍝', name: 'Spaghetti Bolognese', ingredients: [
+        { id: uid(), name: 'Spaghetti', qty: '400g' },
+        { id: uid(), name: 'Beef mince', qty: '500g' },
+        { id: uid(), name: 'Tinned tomatoes', qty: '2 tins' },
+        { id: uid(), name: 'Onion', qty: '1' },
+        { id: uid(), name: 'Garlic', qty: '3 cloves' },
+        { id: uid(), name: 'Red wine', qty: '100ml' },
+      ]},
+      { id: uid(), emoji: '🍛', name: 'Chicken Curry', ingredients: [
+        { id: uid(), name: 'Chicken thighs', qty: '600g' },
+        { id: uid(), name: 'Coconut milk', qty: '400ml' },
+        { id: uid(), name: 'Curry paste', qty: '3 tbsp' },
+        { id: uid(), name: 'Onion', qty: '1' },
+        { id: uid(), name: 'Rice', qty: '300g' },
+      ]},
+      { id: uid(), emoji: '🥗', name: 'Caesar Salad', ingredients: [
+        { id: uid(), name: 'Romaine lettuce', qty: '1 head' },
+        { id: uid(), name: 'Parmesan', qty: '50g' },
+        { id: uid(), name: 'Croutons', qty: 'handful' },
+        { id: uid(), name: 'Caesar dressing', qty: '4 tbsp' },
+        { id: uid(), name: 'Chicken breast', qty: '2' },
+      ]},
+      { id: uid(), emoji: '🍕', name: 'Homemade Pizza', ingredients: [
+        { id: uid(), name: 'Pizza dough', qty: '500g' },
+        { id: uid(), name: 'Passata', qty: '200g' },
+        { id: uid(), name: 'Mozzarella', qty: '250g' },
+        { id: uid(), name: 'Mixed toppings', qty: 'as desired' },
+      ]},
+      { id: uid(), emoji: '🥘', name: 'Veggie Stir Fry', ingredients: [
+        { id: uid(), name: 'Egg noodles', qty: '300g' },
+        { id: uid(), name: 'Mixed veg', qty: '400g' },
+        { id: uid(), name: 'Soy sauce', qty: '3 tbsp' },
+        { id: uid(), name: 'Sesame oil', qty: '1 tbsp' },
+        { id: uid(), name: 'Ginger', qty: '1 thumb' },
+      ]},
+      { id: uid(), emoji: '🫕', name: 'Beef Stew', ingredients: [
+        { id: uid(), name: 'Stewing beef', qty: '600g' },
+        { id: uid(), name: 'Carrots', qty: '3' },
+        { id: uid(), name: 'Potatoes', qty: '4' },
+        { id: uid(), name: 'Beef stock', qty: '500ml' },
+        { id: uid(), name: 'Onion', qty: '2' },
+        { id: uid(), name: 'Tomato purée', qty: '2 tbsp' },
+      ]},
+    ],
+    week: {},
+    shopping: []
+  };
+}
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'shopping') { renderShopping(); updateKeepPreview(); }
+  if (name === 'planner') renderPlanner();
+  if (name === 'meals') renderMeals();
+}
+
+// ══════════════════════════════════════════════
+//  WEEK PLANNER
+// ══════════════════════════════════════════════
+function renderPlanner() {
+  const grid = document.getElementById('week-grid');
+  grid.innerHTML = '';
+
+  DAYS.forEach((day, di) => {
+    const dayData = state.week[day] || {};
+    const card = document.createElement('div');
+    card.className = 'day-card';
+
+    let slotsHtml = MEAL_SLOTS.map((slot, si) => {
+      const chosen = dayData[slot.key] || '';
+      const options = state.meals.map(m =>
+        `<option value="${m.id}" ${chosen === m.id ? 'selected' : ''}>${m.emoji} ${m.name}</option>`
+      ).join('');
+      return `
+        <div class="meal-slot">
+          <span class="meal-slot-label">${slot.label}</span>
+          <select onchange="setMeal('${day}','${slot.key}',this.value)">
+            <option value="">— pick a meal —</option>
+            ${options}
+          </select>
+          ${chosen ? `<button class="add-to-list-btn" onclick="openIngredientModal('${chosen}','${day}','${slot.key}')">🛒 Add</button>` : ''}
+        </div>
+        ${si < MEAL_SLOTS.length - 1 ? '<div class="day-divider"></div>' : ''}
+      `;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="day-header">
+        <span class="day-name">${DAY_EMOJIS[di]} ${day}</span>
+        <button class="day-clear-btn" onclick="clearDay('${day}')" title="Clear day">✕</button>
+      </div>
+      <div class="day-body">${slotsHtml}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function setMeal(day, slot, mealId) {
+  if (!state.week[day]) state.week[day] = {};
+  state.week[day][slot] = mealId;
+  saveState();
+  renderPlanner();
+}
+
+function clearDay(day) {
+  state.week[day] = {};
+  saveState();
+  renderPlanner();
+}
+
+// ══════════════════════════════════════════════
+//  INGREDIENT MODAL
+// ══════════════════════════════════════════════
+function openIngredientModal(mealId, day, slotKey) {
+  const meal = state.meals.find(m => m.id === mealId);
+  if (!meal) return;
+
+  modalContext = { mealId, day, slotKey };
+
+  document.getElementById('modal-title').textContent = `🛒 ${meal.emoji} ${meal.name}`;
+  const list = document.getElementById('modal-ingr-list');
+  list.innerHTML = '';
+
+  if (!meal.ingredients.length) {
+    list.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;">No ingredients listed for this meal.</p>';
+  }
+
+  meal.ingredients.forEach(ing => {
+    const row = document.createElement('div');
+    row.className = 'modal-ingr-item';
+    row.innerHTML = `
+      <input type="checkbox" id="ing_${ing.id}" value="${ing.id}" checked>
+      <label for="ing_${ing.id}">${ing.name}</label>
+      <span class="modal-ingr-qty">${ing.qty || ''}</span>
+    `;
+    list.appendChild(row);
+  });
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalContext = null;
+}
+
+function confirmIngredients() {
+  if (!modalContext) return;
+  const meal = state.meals.find(m => m.id === modalContext.mealId);
+  if (!meal) return;
+
+  const checkboxes = document.querySelectorAll('#modal-ingr-list input[type="checkbox"]:checked');
+  let added = 0;
+
+  checkboxes.forEach(cb => {
+    const ing = meal.ingredients.find(i => i.id === cb.value);
+    if (!ing) return;
+    const label = ing.qty ? `${ing.name} (${ing.qty})` : ing.name;
+    // Don't duplicate same item+source
+    const exists = state.shopping.some(s => s.name === label && s.source === meal.name);
+    if (!exists) {
+      state.shopping.push({ id: uid(), name: label, source: meal.name, checked: false });
+      added++;
+    }
+  });
+
+  saveState();
+  closeModalDirect();
+  showToast(added > 0 ? `✅ Added ${added} ingredient${added>1?'s':''} to list` : '⚠️ No new items added');
+  if (added > 0) {
+    document.getElementById('tab-shopping').style.animation = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  MEALS EDITOR
+// ══════════════════════════════════════════════
+function renderMeals() {
+  const list = document.getElementById('meals-list');
+  list.innerHTML = '';
+
+  if (!state.meals.length) {
+    list.innerHTML = '<div class="empty-state"><span class="empty-emoji">🍽️</span>No meals yet. Add one!</div>';
+    return;
+  }
+
+  state.meals.forEach((meal, mi) => {
+    const card = document.createElement('div');
+    card.className = 'meal-card';
+    card.id = 'meal-card-' + meal.id;
+
+    const ingHtml = meal.ingredients.map(ing => `
+      <div class="ingredient-row" id="ingrow-${ing.id}">
+        <input class="qty-input" type="text" placeholder="qty" value="${ing.qty||''}" oninput="updateIngredient('${meal.id}','${ing.id}','qty',this.value)">
+        <input type="text" placeholder="Ingredient name" value="${ing.name}" oninput="updateIngredient('${meal.id}','${ing.id}','name',this.value)">
+        <button class="del-btn" onclick="deleteIngredient('${meal.id}','${ing.id}')">🗑️</button>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="meal-card-header" onclick="toggleMealCard('${meal.id}')">
+        <span class="meal-emoji-badge">${meal.emoji}</span>
+        <span class="meal-card-title">${meal.name}</span>
+        <span class="meal-card-count">${meal.ingredients.length} ingr.</span>
+        <span class="meal-card-toggle">▼</span>
+      </div>
+      <div class="meal-card-body">
+        <div class="meal-name-row">
+          <input class="emoji-input" type="text" value="${meal.emoji}" placeholder="🍽️" maxlength="4" oninput="updateMealField('${meal.id}','emoji',this.value)">
+          <input type="text" value="${meal.name}" placeholder="Meal name" oninput="updateMealField('${meal.id}','name',this.value)">
+        </div>
+        <p class="ingredients-label">🧂 Ingredients</p>
+        <div id="inglist-${meal.id}">${ingHtml}</div>
+        <button class="add-ingredient-btn" onclick="addIngredient('${meal.id}')">➕ Add ingredient</button>
+        <div class="meal-action-row">
+          <button class="btn btn-danger" onclick="deleteMeal('${meal.id}')">🗑️ Delete meal</button>
+          <button class="btn btn-primary" onclick="saveMealCard('${meal.id}')">💾 Save</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function toggleMealCard(id) {
+  const card = document.getElementById('meal-card-' + id);
+  card.classList.toggle('open');
+}
+
+function updateMealField(mealId, field, value) {
+  const meal = state.meals.find(m => m.id === mealId);
+  if (meal) meal[field] = value;
+}
+
+function updateIngredient(mealId, ingId, field, value) {
+  const meal = state.meals.find(m => m.id === mealId);
+  if (!meal) return;
+  const ing = meal.ingredients.find(i => i.id === ingId);
+  if (ing) ing[field] = value;
+}
+
+function addIngredient(mealId) {
+  const meal = state.meals.find(m => m.id === mealId);
+  if (!meal) return;
+  const newIng = { id: uid(), name: '', qty: '' };
+  meal.ingredients.push(newIng);
+
+  const list = document.getElementById('inglist-' + mealId);
+  const row = document.createElement('div');
+  row.className = 'ingredient-row';
+  row.id = 'ingrow-' + newIng.id;
+  row.innerHTML = `
+    <input class="qty-input" type="text" placeholder="qty" value="" oninput="updateIngredient('${mealId}','${newIng.id}','qty',this.value)">
+    <input type="text" placeholder="Ingredient name" value="" oninput="updateIngredient('${mealId}','${newIng.id}','name',this.value)">
+    <button class="del-btn" onclick="deleteIngredient('${mealId}','${newIng.id}')">🗑️</button>
+  `;
+  list.appendChild(row);
+  row.querySelector('input[type="text"]:not(.qty-input)').focus();
+}
+
+function deleteIngredient(mealId, ingId) {
+  const meal = state.meals.find(m => m.id === mealId);
+  if (!meal) return;
+  meal.ingredients = meal.ingredients.filter(i => i.id !== ingId);
+  const row = document.getElementById('ingrow-' + ingId);
+  if (row) row.remove();
+}
+
+function saveMealCard(mealId) {
+  saveState();
+  const card = document.getElementById('meal-card-' + mealId);
+  // Update header badge
+  const meal = state.meals.find(m => m.id === mealId);
+  if (meal) {
+    card.querySelector('.meal-emoji-badge').textContent = meal.emoji;
+    card.querySelector('.meal-card-title').textContent = meal.name;
+    card.querySelector('.meal-card-count').textContent = meal.ingredients.length + ' ingr.';
+  }
+  showToast('💾 Meal saved!');
+}
+
+function deleteMeal(mealId) {
+  if (!confirm('Delete this meal? It will also be removed from your week plan.')) return;
+  state.meals = state.meals.filter(m => m.id !== mealId);
+  DAYS.forEach(d => {
+    MEAL_SLOTS.forEach(s => {
+      if (state.week[d] && state.week[d][s.key] === mealId) delete state.week[d][s.key];
+    });
+  });
+  saveState();
+  renderMeals();
+  showToast('🗑️ Meal deleted');
+}
+
+function addNewMeal() {
+  const newMeal = { id: uid(), emoji: '🍽️', name: 'New Meal', ingredients: [] };
+  state.meals.push(newMeal);
+  saveState();
+  renderMeals();
+  // Open the new card
+  const card = document.getElementById('meal-card-' + newMeal.id);
+  if (card) {
+    card.classList.add('open');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      const nameInput = card.querySelector('.meal-name-row input[type="text"]');
+      if (nameInput) { nameInput.focus(); nameInput.select(); }
+    }, 200);
+  }
+}
+
+function exportMeals() {
+  const payload = {
+    exported: new Date().toISOString(),
+    version: 1,
+    meals: state.meals
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `meals-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`⬇️ Exported ${state.meals.length} meal${state.meals.length !== 1 ? 's' : ''}`);
+}
+
+function importMeals(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Accept either { meals: [...] } wrapper or a bare array
+      const incoming = Array.isArray(data) ? data : (data.meals || []);
+      if (!incoming.length) { showToast('⚠️ No meals found in file'); return; }
+
+      let added = 0, skipped = 0;
+      incoming.forEach(meal => {
+        // Deduplicate by name (case-insensitive)
+        const exists = state.meals.some(m => m.name.trim().toLowerCase() === meal.name.trim().toLowerCase());
+        if (exists) { skipped++; return; }
+        // Ensure IDs are fresh to avoid collisions
+        meal.id = uid();
+        meal.ingredients = (meal.ingredients || []).map(ing => ({ ...ing, id: uid() }));
+        state.meals.push(meal);
+        added++;
+      });
+
+      saveState();
+      renderMeals();
+      const msg = skipped > 0
+        ? `⬆️ Imported ${added} meal${added !== 1 ? 's' : ''} (${skipped} already existed)`
+        : `⬆️ Imported ${added} meal${added !== 1 ? 's' : ''}`;
+      showToast(msg);
+    } catch (err) {
+      showToast('❌ Invalid JSON file');
+    }
+    // Reset the file input so the same file can be re-imported if needed
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════════
+//  SHOPPING LIST
+// ══════════════════════════════════════════════
+function renderShopping() {
+  const container = document.getElementById('shopping-items');
+  container.innerHTML = '';
+
+  if (!state.shopping.length) {
+    container.innerHTML = '<div class="empty-state"><span class="empty-emoji">🛒</span>Your list is empty.<br>Add items from your week plan or type above.</div>';
+    document.getElementById('shop-count').textContent = '0 items';
+    return;
+  }
+
+  const total = state.shopping.length;
+  const done = state.shopping.filter(i => i.checked).length;
+  document.getElementById('shop-count').textContent = `${total - done} remaining / ${total} total`;
+
+  state.shopping.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'shop-item' + (item.checked ? ' checked' : '');
+    div.id = 'shopitem-' + item.id;
+    div.innerHTML = `
+      <div class="shop-item-check" onclick="toggleShopItem('${item.id}')">${item.checked ? '✓' : ''}</div>
+      <div class="shop-item-text">
+        <input type="text" value="${escapeHtml(item.name)}" onchange="updateShopItem('${item.id}',this.value)" ${item.checked ? 'disabled' : ''}>
+      </div>
+      ${item.source ? `<span class="shop-item-source">${item.source}</span>` : ''}
+      <button class="del-btn" onclick="removeShopItem('${item.id}')">✕</button>
+    `;
+    container.appendChild(div);
+  });
+
+  updateKeepPreview();
+}
+
+function toggleShopItem(id) {
+  const item = state.shopping.find(i => i.id === id);
+  if (item) { item.checked = !item.checked; saveState(); renderShopping(); }
+}
+
+function updateShopItem(id, value) {
+  const item = state.shopping.find(i => i.id === id);
+  if (item) { item.name = value; saveState(); }
+}
+
+function removeShopItem(id) {
+  state.shopping = state.shopping.filter(i => i.id !== id);
+  saveState();
+  renderShopping();
+}
+
+function addAdhocItem() {
+  const input = document.getElementById('adhoc-input');
+  const val = input.value.trim();
+  if (!val) return;
+  state.shopping.push({ id: uid(), name: val, source: '', checked: false });
+  input.value = '';
+  saveState();
+  renderShopping();
+  showToast('➕ Added to list');
+}
+
+function clearChecked() {
+  state.shopping = state.shopping.filter(i => !i.checked);
+  saveState();
+  renderShopping();
+  showToast('✅ Cleared completed items');
+}
+
+function clearAll() {
+  if (!state.shopping.length) return;
+  if (!confirm('Clear the entire shopping list?')) return;
+  state.shopping = [];
+  saveState();
+  renderShopping();
+  showToast('🗑️ List cleared');
+}
+
+// ══════════════════════════════════════════════
+//  GOOGLE KEEP COPY
+// ══════════════════════════════════════════════
+function updateKeepPreview() {
+  const preview = document.getElementById('keep-preview');
+  if (!state.shopping.length) {
+    preview.textContent = 'Your list will appear here…';
+    return;
+  }
+  const lines = state.shopping
+    .filter(i => !i.checked)
+    .map(i => `☐ ${i.name}`)
+    .join('\n');
+  const checkedLines = state.shopping
+    .filter(i => i.checked)
+    .map(i => `☑ ${i.name}`)
+    .join('\n');
+  preview.textContent = lines + (checkedLines ? '\n\n' + checkedLines : '');
+}
+
+function copyForKeep() {
+  updateKeepPreview();
+  const text = document.getElementById('keep-preview').textContent;
+  if (!text || text === 'Your list will appear here…') {
+    showToast('⚠️ Nothing to copy'); return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 Copied! Open Google Keep and paste 🎉');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 Copied to clipboard!');
+  });
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════
+loadState();
+renderPlanner();
+renderMeals();
+renderShopping();
+</script>
+</body>
+</html>
