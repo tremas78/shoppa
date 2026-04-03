@@ -955,7 +955,7 @@ function deleteMeal(mealId) {
 }
 
 function addNewMeal() {
-  const newMeal = { id: uid(), emoji: '🍽️', name: 'New Meal', ingredients: [] };
+  const newMeal = { id: uid(), emoji: '🍽️', name: '', ingredients: [] };
   state.meals.push(newMeal);
   saveState();
   renderMeals();
