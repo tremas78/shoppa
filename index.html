@@ -694,51 +694,7 @@ function uid() {
 
 function getDefaultState() {
   return {
-    meals: [
-      { id: uid(), emoji: '🍝', name: 'Spaghetti Bolognese', ingredients: [
-        { id: uid(), name: 'Spaghetti', qty: '400g' },
-        { id: uid(), name: 'Beef mince', qty: '500g' },
-        { id: uid(), name: 'Tinned tomatoes', qty: '2 tins' },
-        { id: uid(), name: 'Onion', qty: '1' },
-        { id: uid(), name: 'Garlic', qty: '3 cloves' },
-        { id: uid(), name: 'Red wine', qty: '100ml' },
-      ]},
-      { id: uid(), emoji: '🍛', name: 'Chicken Curry', ingredients: [
-        { id: uid(), name: 'Chicken thighs', qty: '600g' },
-        { id: uid(), name: 'Coconut milk', qty: '400ml' },
-        { id: uid(), name: 'Curry paste', qty: '3 tbsp' },
-        { id: uid(), name: 'Onion', qty: '1' },
-        { id: uid(), name: 'Rice', qty: '300g' },
-      ]},
-      { id: uid(), emoji: '🥗', name: 'Caesar Salad', ingredients: [
-        { id: uid(), name: 'Romaine lettuce', qty: '1 head' },
-        { id: uid(), name: 'Parmesan', qty: '50g' },
-        { id: uid(), name: 'Croutons', qty: 'handful' },
-        { id: uid(), name: 'Caesar dressing', qty: '4 tbsp' },
-        { id: uid(), name: 'Chicken breast', qty: '2' },
-      ]},
-      { id: uid(), emoji: '🍕', name: 'Homemade Pizza', ingredients: [
-        { id: uid(), name: 'Pizza dough', qty: '500g' },
-        { id: uid(), name: 'Passata', qty: '200g' },
-        { id: uid(), name: 'Mozzarella', qty: '250g' },
-        { id: uid(), name: 'Mixed toppings', qty: 'as desired' },
-      ]},
-      { id: uid(), emoji: '🥘', name: 'Veggie Stir Fry', ingredients: [
-        { id: uid(), name: 'Egg noodles', qty: '300g' },
-        { id: uid(), name: 'Mixed veg', qty: '400g' },
-        { id: uid(), name: 'Soy sauce', qty: '3 tbsp' },
-        { id: uid(), name: 'Sesame oil', qty: '1 tbsp' },
-        { id: uid(), name: 'Ginger', qty: '1 thumb' },
-      ]},
-      { id: uid(), emoji: '🫕', name: 'Beef Stew', ingredients: [
-        { id: uid(), name: 'Stewing beef', qty: '600g' },
-        { id: uid(), name: 'Carrots', qty: '3' },
-        { id: uid(), name: 'Potatoes', qty: '4' },
-        { id: uid(), name: 'Beef stock', qty: '500ml' },
-        { id: uid(), name: 'Onion', qty: '2' },
-        { id: uid(), name: 'Tomato purée', qty: '2 tbsp' },
-      ]},
-    ],
+    meals: [],
     week: {},
     shopping: []
   };
