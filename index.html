@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>🥘 Shoppa - Meal Planner</title>
+<title>Shoppa - A weekly meal planner</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@400;500;600&display=swap');
 
@@ -564,13 +564,47 @@
     border-top: 2px dashed var(--border);
     margin: 18px 0;
   }
+
+  /* ── ANIMATED WALLPAPER ── */
+  .wallpaper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .wallpaper span {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.13;
+    animation: floatAcross linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes floatAcross {
+    from { transform: translateY(-10vh); }
+    to   { transform: translateY(110vh); }
+  }
 </style>
 </head>
 <body>
 
+<div class="wallpaper">
+  <span style="left:5%;  font-size:2.2rem; animation-duration:22s; animation-delay:0s;">🍅</span>
+  <span style="left:12%; font-size:1.6rem; animation-duration:28s; animation-delay:-6s;">🥦</span>
+  <span style="left:22%; font-size:2.5rem; animation-duration:19s; animation-delay:-3s;">🥕</span>
+  <span style="left:33%; font-size:1.8rem; animation-duration:25s; animation-delay:-11s;">🍋</span>
+  <span style="left:42%; font-size:2rem;   animation-duration:31s; animation-delay:-8s;">🧅</span>
+  <span style="left:52%; font-size:1.5rem; animation-duration:21s; animation-delay:-15s;">🫑</span>
+  <span style="left:61%; font-size:2.3rem; animation-duration:27s; animation-delay:-2s;">🍇</span>
+  <span style="left:70%; font-size:1.7rem; animation-duration:23s; animation-delay:-9s;">🥑</span>
+  <span style="left:79%; font-size:2.1rem; animation-duration:18s; animation-delay:-4s;">🌽</span>
+  <span style="left:88%; font-size:1.9rem; animation-duration:29s; animation-delay:-13s;">🍊</span>
+  <span style="left:95%; font-size:1.6rem; animation-duration:24s; animation-delay:-7s;">🥝</span>
+</div>
+
 <header class="app-header">
-  <h1>🥘 Shoppa - A Weekly Meal Planner</h1>
-  <p>Plan meals · Build your shopping list</p>
+  <h1>Shoppa</h1>
+  <p>A weekly meal planner</p>
 </header>
 
 <nav class="tab-bar">
@@ -694,7 +728,51 @@ function uid() {
 
 function getDefaultState() {
   return {
-    meals: [],
+    meals: [
+      { id: uid(), emoji: '🍝', name: 'Spaghetti Bolognese', ingredients: [
+        { id: uid(), name: 'Spaghetti', qty: '400g' },
+        { id: uid(), name: 'Beef mince', qty: '500g' },
+        { id: uid(), name: 'Tinned tomatoes', qty: '2 tins' },
+        { id: uid(), name: 'Onion', qty: '1' },
+        { id: uid(), name: 'Garlic', qty: '3 cloves' },
+        { id: uid(), name: 'Red wine', qty: '100ml' },
+      ]},
+      { id: uid(), emoji: '🍛', name: 'Chicken Curry', ingredients: [
+        { id: uid(), name: 'Chicken thighs', qty: '600g' },
+        { id: uid(), name: 'Coconut milk', qty: '400ml' },
+        { id: uid(), name: 'Curry paste', qty: '3 tbsp' },
+        { id: uid(), name: 'Onion', qty: '1' },
+        { id: uid(), name: 'Rice', qty: '300g' },
+      ]},
+      { id: uid(), emoji: '🥗', name: 'Caesar Salad', ingredients: [
+        { id: uid(), name: 'Romaine lettuce', qty: '1 head' },
+        { id: uid(), name: 'Parmesan', qty: '50g' },
+        { id: uid(), name: 'Croutons', qty: 'handful' },
+        { id: uid(), name: 'Caesar dressing', qty: '4 tbsp' },
+        { id: uid(), name: 'Chicken breast', qty: '2' },
+      ]},
+      { id: uid(), emoji: '🍕', name: 'Homemade Pizza', ingredients: [
+        { id: uid(), name: 'Pizza dough', qty: '500g' },
+        { id: uid(), name: 'Passata', qty: '200g' },
+        { id: uid(), name: 'Mozzarella', qty: '250g' },
+        { id: uid(), name: 'Mixed toppings', qty: 'as desired' },
+      ]},
+      { id: uid(), emoji: '🥘', name: 'Veggie Stir Fry', ingredients: [
+        { id: uid(), name: 'Egg noodles', qty: '300g' },
+        { id: uid(), name: 'Mixed veg', qty: '400g' },
+        { id: uid(), name: 'Soy sauce', qty: '3 tbsp' },
+        { id: uid(), name: 'Sesame oil', qty: '1 tbsp' },
+        { id: uid(), name: 'Ginger', qty: '1 thumb' },
+      ]},
+      { id: uid(), emoji: '🫕', name: 'Beef Stew', ingredients: [
+        { id: uid(), name: 'Stewing beef', qty: '600g' },
+        { id: uid(), name: 'Carrots', qty: '3' },
+        { id: uid(), name: 'Potatoes', qty: '4' },
+        { id: uid(), name: 'Beef stock', qty: '500ml' },
+        { id: uid(), name: 'Onion', qty: '2' },
+        { id: uid(), name: 'Tomato purée', qty: '2 tbsp' },
+      ]},
+    ],
     week: {},
     shopping: []
   };
