@@ -1193,11 +1193,11 @@ function updateKeepPreview() {
   }
   const lines = state.shopping
     .filter(i => !i.checked)
-    .map(i => `☐ ${i.name}`)
+    .map(i => i.name)
     .join('\n');
   const checkedLines = state.shopping
     .filter(i => i.checked)
-    .map(i => `☑ ${i.name}`)
+    .map(i => i.name)
     .join('\n');
   preview.textContent = lines + (checkedLines ? '\n\n' + checkedLines : '');
 }
