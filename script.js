@@ -167,13 +167,26 @@ function openIngredientModal(mealId, day, slotKey) {
 
   if (!meal.ingredients.length) {
     list.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;">No ingredients listed for this meal.</p>';
+    return;
   }
+
+  // Add a "Select All" checkbox at the top
+  const selectAllRow = document.createElement('div');
+  selectAllRow.className = 'modal-ingr-item';
+  selectAllRow.style.background = 'var(--surface2)';
+  selectAllRow.style.border = '1.5px solid var(--accent1)';
+  selectAllRow.innerHTML = `
+    <input type="checkbox" id="select-all-ingredients" onchange="toggleAllIngredients(this.checked)">
+    <label for="select-all-ingredients" style="font-weight:600;">✅ Select All</label>
+    <span style="font-size:0.78rem;color:var(--text2);margin-left:auto;">${meal.ingredients.length} items</span>
+  `;
+  list.appendChild(selectAllRow);
 
   meal.ingredients.forEach(ing => {
     const row = document.createElement('div');
     row.className = 'modal-ingr-item';
     row.innerHTML = `
-      <input type="checkbox" id="ing_${ing.id}" value="${ing.id}" checked>
+      <input type="checkbox" id="ing_${ing.id}" value="${ing.id}">
       <label for="ing_${ing.id}">${ing.name}</label>
       <span class="modal-ingr-qty">${ing.qty || ''}</span>
     `;
@@ -181,6 +194,15 @@ function openIngredientModal(mealId, day, slotKey) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
+}
+
+function toggleAllIngredients(checked) {
+  const checkboxes = document.querySelectorAll('#modal-ingr-list input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    if (cb.id !== 'select-all-ingredients') {
+      cb.checked = checked;
+    }
+  });
 }
 
 function closeModal(e) {
