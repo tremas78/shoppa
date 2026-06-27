@@ -372,11 +372,62 @@ body {
   gap: 10px;
   padding: 10px 12px;
   box-shadow: var(--shadow-sm);
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.shop-item.dragging {
+  touch-action: none;
 }
 .shop-item.checked {
   opacity: 0.45;
   text-decoration: line-through;
+}
+.shop-item.dragging:not(.drag-over) {
+  opacity: 0.3;
+  transform: scale(0.95);
+}
+.shop-item.drag-over {
+  border-color: var(--accent1);
+  background: var(--surface2);
+  box-shadow: 0 0 0 2px var(--accent1);
+  transform: scale(1.02);
+  transition: all 0.15s;
+}
+.shop-item.dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 1.3rem;
+  color: var(--text2);
+  opacity: 0.4;
+  user-select: none;
+  padding: 8px 4px;
+  flex-shrink: 0;
+  line-height: 1;
+  touch-action: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  -webkit-touch-callout: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.shop-item-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.9;
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  border-color: var(--accent1);
+  background: var(--surface);
+  transition: none;
 }
 .shop-item-check {
   width: 22px;

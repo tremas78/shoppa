@@ -15,6 +15,17 @@ let state = {
 
 let modalContext = null; // { mealId, day, slotKey }
 
+// ══════════════════════════════════════════════
+//  DRAG AND DROP STATE
+// ══════════════════════════════════════════════
+let draggedItemId = null;
+let dragStartY = 0;
+let dragCurrentY = 0;
+let dragGhostElement = null;
+let dragCloneElement = null;
+let dragOverItemId = null;
+let isDragging = false;
+
 function loadState() {
   const saved = localStorage.getItem('mealplanner_v2');
   if (saved) {
@@ -450,11 +461,13 @@ function renderShopping() {
   const done = state.shopping.filter(i => i.checked).length;
   document.getElementById('shop-count').textContent = `${total - done} remaining / ${total} total`;
 
-  state.shopping.forEach(item => {
+  state.shopping.forEach((item, index) => {
     const div = document.createElement('div');
     div.className = 'shop-item' + (item.checked ? ' checked' : '');
     div.id = 'shopitem-' + item.id;
+    div.dataset.index = index;
     div.innerHTML = `
+      <span class="drag-handle">⠿</span>
       <div class="shop-item-check" onclick="toggleShopItem('${item.id}')">${item.checked ? '✓' : ''}</div>
       <div class="shop-item-text">
         <input type="text" value="${escapeHtml(item.name)}" onchange="updateShopItem('${item.id}',this.value)" ${item.checked ? 'disabled' : ''}>
@@ -462,10 +475,277 @@ function renderShopping() {
       ${item.source ? `<span class="shop-item-source">${item.source}</span>` : ''}
       <button class="del-btn" onclick="removeShopItem('${item.id}')">✕</button>
     `;
+
+    // Touch events (mobile)
+    div.addEventListener('touchstart', handleTouchStart, { passive: false });
+    div.addEventListener('touchmove', handleTouchMove, { passive: false });
+    div.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    // Mouse events (desktop)
+    div.addEventListener('mousedown', handleMouseDown);
+
     container.appendChild(div);
   });
 
   updateKeepPreview();
+}
+
+// ══════════════════════════════════════════════
+//  DRAG AND DROP — TOUCH (MOBILE)
+// ══════════════════════════════════════════════
+function handleTouchStart(e) {
+  if (isDragging) return;
+
+  const touch = e.touches[0];
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (!target || !target.closest('.drag-handle')) return;
+
+  const item = e.currentTarget;
+  const itemId = item.id.replace('shopitem-', '');
+  const shopItem = state.shopping.find(i => i.id === itemId);
+
+  // Don't drag checked items
+  if (shopItem && shopItem.checked) return;
+
+  e.preventDefault();
+
+  draggedItemId = itemId;
+  dragStartY = touch.clientY;
+  dragCurrentY = touch.clientY;
+  dragGhostElement = item;
+  isDragging = false;
+
+  // Create floating clone
+  createDragClone(item);
+
+  // Fade original
+  item.classList.add('dragging');
+}
+
+function handleTouchMove(e) {
+  if (!dragGhostElement) return;
+  e.preventDefault();
+
+  const touch = e.touches[0];
+  dragCurrentY = touch.clientY;
+  const dist = Math.abs(dragCurrentY - dragStartY);
+
+  // 10px threshold to prevent accidental drags
+  if (!isDragging && dist > 10) {
+    isDragging = true;
+  }
+
+  if (isDragging) {
+    updateClonePosition(touch.clientY);
+
+    // Detect drop target
+    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+    const targetItem = elements.find(el =>
+      el.classList &&
+      el.classList.contains('shop-item') &&
+      el.id !== dragGhostElement?.id
+    );
+
+    // Remove previous highlight
+    document.querySelectorAll('.shop-item.drag-over').forEach(el => {
+      el.classList.remove('drag-over');
+    });
+
+    if (targetItem) {
+      targetItem.classList.add('drag-over');
+      dragOverItemId = targetItem.id.replace('shopitem-', '');
+    } else {
+      dragOverItemId = null;
+    }
+  }
+}
+
+function handleTouchEnd(e) {
+  if (!dragGhostElement) return;
+
+  cleanupDragState();
+
+  // Reorder if valid drop
+  if (isDragging && draggedItemId && dragOverItemId && draggedItemId !== dragOverItemId) {
+    const draggedIndex = state.shopping.findIndex(item => item.id === draggedItemId);
+    const targetIndex = state.shopping.findIndex(item => item.id === dragOverItemId);
+
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      const [draggedItem] = state.shopping.splice(draggedIndex, 1);
+      // Adjust target index if item was removed before it
+      const adjustedTarget = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex;
+      state.shopping.splice(adjustedTarget, 0, draggedItem);
+
+      saveState();
+      renderShopping();
+      showToast('🔄 Item reordered');
+    }
+  }
+
+  isDragging = false;
+  draggedItemId = null;
+  dragOverItemId = null;
+}
+
+function updateClonePosition(y) {
+  if (!dragCloneElement) return;
+  dragCloneElement.style.top = (y - dragCloneElementHeight / 2) + 'px';
+}
+
+// ══════════════════════════════════════════════
+//  DRAG AND DROP — SHARED HELPERS
+// ══════════════════════════════════════════════
+let dragCloneElementHeight = 0;
+
+function createDragClone(item) {
+  // Clean up any existing clone first (safety guard)
+  if (dragCloneElement) {
+    dragCloneElement.remove();
+    dragCloneElement = null;
+  }
+
+  const clone = item.cloneNode(true);
+  const rect = item.getBoundingClientRect();
+  dragCloneElementHeight = rect.height;
+  clone.style.position = 'fixed';
+  clone.style.left = rect.left + 'px';
+  clone.style.top = rect.top + 'px';
+  clone.style.width = rect.width + 'px';
+  clone.style.pointerEvents = 'none';
+  clone.style.zIndex = '1000';
+  clone.style.opacity = '0.9';
+  clone.style.boxShadow = '0 8px 30px rgba(0,0,0,0.2)';
+  clone.style.borderColor = 'var(--accent1)';
+  clone.style.background = 'var(--surface)';
+  clone.style.transition = 'none';
+  clone.classList.add('shop-item-ghost');
+  document.body.appendChild(clone);
+  dragCloneElement = clone;
+  return dragCloneElementHeight;
+}
+
+function cleanupDragState() {
+  // Remove clone
+  if (dragCloneElement) {
+    dragCloneElement.remove();
+    dragCloneElement = null;
+  }
+
+  // Remove highlight
+  document.querySelectorAll('.shop-item.drag-over').forEach(el => {
+    el.classList.remove('drag-over');
+  });
+
+  // Unfade original
+  if (dragGhostElement) {
+    dragGhostElement.classList.remove('dragging');
+  }
+
+  // Reset visual drag state (preserve draggedItemId, dragOverItemId for caller reorder logic)
+  dragStartY = 0;
+  dragCurrentY = 0;
+  dragGhostElement = null;
+  dragCloneElementHeight = 0;
+}
+
+// ══════════════════════════════════════════════
+//  DRAG AND DROP — MOUSE (DESKTOP)
+// ══════════════════════════════════════════════
+function handleMouseDown(e) {
+  if (isDragging) return;
+
+  const target = e.target;
+  if (!target.closest('.drag-handle')) return;
+
+  const item = e.currentTarget;
+  const itemId = item.id.replace('shopitem-', '');
+  const shopItem = state.shopping.find(i => i.id === itemId);
+
+  // Don't drag checked items
+  if (shopItem && shopItem.checked) return;
+
+  e.preventDefault();
+
+  draggedItemId = itemId;
+  dragStartY = e.clientY;
+  dragCurrentY = e.clientY;
+  dragGhostElement = item;
+  isDragging = false;
+
+  // Create floating clone
+  createDragClone(item);
+
+  // Fade original
+  item.classList.add('dragging');
+
+  // Attach move/up listeners to document
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+  window.addEventListener('blur', cleanupDragState);
+}
+
+function handleMouseMove(e) {
+  if (!dragGhostElement) return;
+  e.preventDefault();
+
+  dragCurrentY = e.clientY;
+  const dist = Math.abs(dragCurrentY - dragStartY);
+
+  if (!isDragging && dist > 10) {
+    isDragging = true;
+  }
+
+  if (isDragging) {
+    updateClonePosition(e.clientY);
+
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    const targetItem = elements.find(el =>
+      el.classList &&
+      el.classList.contains('shop-item') &&
+      el.id !== dragGhostElement?.id
+    );
+
+    document.querySelectorAll('.shop-item.drag-over').forEach(el => {
+      el.classList.remove('drag-over');
+    });
+
+    if (targetItem) {
+      targetItem.classList.add('drag-over');
+      dragOverItemId = targetItem.id.replace('shopitem-', '');
+    } else {
+      dragOverItemId = null;
+    }
+  }
+}
+
+function handleMouseUp(e) {
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', handleMouseUp);
+  window.removeEventListener('blur', cleanupDragState);
+
+  if (!dragGhostElement) return;
+
+  cleanupDragState();
+
+  // Reorder if valid drop
+  if (isDragging && draggedItemId && dragOverItemId && draggedItemId !== dragOverItemId) {
+    const draggedIndex = state.shopping.findIndex(item => item.id === draggedItemId);
+    const targetIndex = state.shopping.findIndex(item => item.id === dragOverItemId);
+
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      const [draggedItem] = state.shopping.splice(draggedIndex, 1);
+      const adjustedTarget = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex;
+      state.shopping.splice(adjustedTarget, 0, draggedItem);
+
+      saveState();
+      renderShopping();
+      showToast('🔄 Item reordered');
+    }
+  }
+
+  isDragging = false;
+  draggedItemId = null;
+  dragOverItemId = null;
 }
 
 function toggleShopItem(id) {
